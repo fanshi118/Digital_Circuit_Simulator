@@ -1,0 +1,105 @@
+#include <iostream>
+#include "net.h"
+#include "gates.h"
+using namespace std;
+
+Net::Net()
+{
+	val = 'X';
+	delay = 0;
+	drivers = new vector<Gate *>;
+	loads = new vector<Gate *>;
+}
+
+Net::Net(string n)
+{
+	val = 'X';
+	netname = n;
+	delay = 0;
+	drivers = new vector<Gate *>;
+	loads = new vector<Gate *>;
+}
+
+Net::~Net()
+{
+	while(!drivers->empty()){
+		delete drivers->back();
+		drivers->pop_back();
+	}
+	while(!loads->empty()){
+		delete loads->back();
+		loads->pop_back();
+	}
+	delete drivers;
+	delete loads;
+}
+
+string Net::name() const
+{ return netname; }
+
+void Net::addDriver(Gate *g)
+{ drivers->push_back(g); }
+
+void Net::addLoad(Gate *g)
+{ loads->push_back(g); }
+
+vector<Gate *>* Net::getLoads()
+{ return loads; }
+
+vector<Gate *>* Net::getDrivers()
+{ return drivers; }
+
+char Net::computeVal()
+{
+	if(drivers->size() == 0)
+		return val;
+	char tempV = drivers->back()->eval();
+	for(vector<Gate *>::iterator it = drivers->begin();
+		it != drivers->end();	
+		++it)
+	{
+		if((*it)->eval() != tempV){
+			this->setVal('X');
+			return 'X';
+		}
+	}
+	this->setVal(tempV);
+	return tempV;
+}
+
+int Net::computeDelay()
+{
+	int maxGD = 0; // gate delay
+	int maxID = 0; // input nets delay
+	for(vector<Gate *>::iterator it = drivers->begin();
+		it != drivers->end();	
+		++it)
+	{
+		if((*it)->getDelay() > maxGD)
+			maxGD = (*it)->getDelay();
+		for(vector<Net *>::iterator jt = (*it)->getInputs()->begin();
+			jt != (*it)->getInputs()->end();
+			++jt)
+		{
+			if((*jt)->getDelay() > maxID)
+				maxID = (*jt)->getDelay();
+		}
+	}
+	delay = maxGD + maxID;
+	return delay;
+}
+
+void Net::printDriversLoads()
+{
+	cout << "Drivers are...";
+	for(vector<Gate *>::iterator it = drivers->begin();
+		it != drivers->end();
+		++it)
+		cout << (*it)->name() << " ";
+	cout << endl << "Loads are...";
+	for(vector<Gate *>::iterator jt = loads->begin();
+		jt != loads->end();
+		++jt)
+		cout << (*jt)->name() << " ";
+	cout << endl;
+}

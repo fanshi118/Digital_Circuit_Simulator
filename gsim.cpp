@@ -1,0 +1,52 @@
+// Team #18
+// Student 0: Shi Fan
+// Student 1: Eloho Akalamudo
+#include <iostream>
+#include <fstream>
+
+#include "vlg_parser.h"
+#ifdef AUTOPARSE
+#include "vlg_parser_auto.h"
+#else
+#include "vlg_parser_man.h"
+#endif
+
+#include "design.h"
+#include "gates.h"
+#include "net.h"
+#include "logicsim.h"
+
+using namespace std;
+
+int main(int argc, char *argv[])
+{
+    if(argc < 3){
+      cerr << "Usage ./gsim infile.v outfile.v" << endl;
+      return 1;
+    }
+#ifdef AUTOPARSE
+    VlgParser *parser = new VlgParserAuto();
+#else
+    VlgParser *parser = new VlgParserMan();
+#endif
+    Design *d = parser->parse(argv[1]);
+		//cout << "We here?" << endl;
+    // Add more of your code here to simply dump the design back
+    // out to a file named output.v
+		/***Part 1***/
+		//ofstream myfile(argv[2]);
+		//d->dump(myfile);
+
+		/***Part 2***/
+		LogicSim ls;
+		if(ls.readParse(argv[2],d) == false){
+			cerr << "Parsing not okay..." << endl;
+			return 1;
+		}
+		ls.simDump(argv[2],d,argv[3]);
+		//cout << "Parsing good!" << endl;
+    delete parser;
+
+    return 0;
+}
+
